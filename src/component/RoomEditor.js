@@ -1,118 +1,150 @@
-import React, { useState, useRef } from "react";
+import React, {useState, useRef} from 'react';
 import {range} from "lodash-es";
 import {Button} from "@material-ui/core";
-import SidebarComponent from './SidebarComponent';
 import ReactFlow, {
-    ReactFlowProvider,
-    Handle,
-    Controls,
-    Background,
-    addEdge,
-    removeElements,
-} from "react-flow-renderer";
+  ReactFlowProvider,
+  addEdge,
+  removeElements,
+  Controls, Background,
+} from 'react-flow-renderer';
+
+import SidebarComponent from './SidebarComponent';
+
+// import './dnd.css';
 
 const graphStyles = {width: "100%", height: "500px"};
-const currentState = {
-    elements: [
-        {id: '1', data: {label: ''}, position: {x: 150, y: 150}},
-        {id: '2', data: {label: ''}, position: {x: 150, y: 300}},
-    ],
-    //deleteMode: false,
-};
+
+const initialElements = [
+  {
+    id: '1',
+    type: 'custom',
+    data: {label: 'input node'},
+    position: {x: 250, y: 150},
+  },
+];
+
 const CustomNode = ({data}) => ( // https://reactflow.dev/examples/custom-node/
-    <>
-        <div style={{
-            height: 10,
-            width: 10,
-            color: "RED",
-            backgroundColor: "BLACK"
-        }}/>
-    </>
+  <>
+    <div style={{
+      height: 10,
+      width: 10,
+      color: "RED",
+      backgroundColor: "BLACK"
+    }}/>
+  </>
 );
 const nodeTypes = {
-    custom: CustomNode,
+  custom: CustomNode,
 }
 
-let id = 0;
+let id = 1;
 const getId = () => `dndnode_${id++}`;
 
-/**
- * Room editor component
- */
-export default class RoomEditor extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = currentState;
-        // this.click = this.click.bind(this);
+
+const DnDFlow = () => {
+    const reactFlowWrapper = useRef(null);
+    const [reactFlowInstance, setReactFlowInstance] = useState(null);
+    const [elements, setElements] = useState(initialElements);
+    const [deleteMode, setDeleteMode] = useState(false);
+    /*const onConnect = (params) => setElements((els) => addEdge(params, els));
+    const onElementsRemove = (elementsToRemove) =>
+      setElements((els) => removeElements(elementsToRemove, els));*/
+
+    const onLoad = (_reactFlowInstance) =>
+      setReactFlowInstance(_reactFlowInstance);
+
+    const saveButton = () => {
+      console.log("Elements: ", elements);
+      // console.log("roomId: ", roomId);
     }
 
-    async componentDidMount() {
-        // todo: запрос на получение инфы с бэка и запись в state
-        await this.setState({elements: this.props.data});
-        // await console.log(this.state.elements)
-    }
+    const onDragOver = (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    };
 
-    async componentDidUpdate(prevProps) {
-        if (prevProps.data !== this.props.data) {
-            await this.setState({elements: this.props.data, deleteMode: false, editMode: false})
+    const onNodeDragStop = (event, node) => {
+      console.log("Moving element: ", node);
+      console.log("Initial  state before set: ", elements);
+      event.preventDefault();
+      let flag = true;
+      console.log("Attempt to add: ", node.position);
+      let buf = elements;
+      for (let i in range(0, buf.length)) {
+        console.log("Current element position is: ", buf[i].position);
+        if (elements[i].id === node.id) {
+          buf[i].position = node.position;
+          console.log("state to be set: ", buf);
         }
-        if (prevProps.deleteMode !== this.props.deleteMode) {
-            await this.setState({deleteMode: this.props.deleteMode, editMode: false})
-        }
-        if (prevProps.editMode !== this.props.editMode) {
-            await this.setState({editMode: this.props.editMode, deleteMode: false})
-        }
-        // console.log(this.state.elements)
+      }
+      setElements(buf);
+      console.log("set state: ", elements)
     }
 
-    saveButton(elements, roomId) {
-        console.log("Elements: ", elements);
-        console.log("roomId: ", roomId);
-        //todo: отправка на бэк локальной переменной с положением элементов
-    }
-
-    onNodeDragStop = (event, node) => {
-        // console.log('drag stop: ', node)
-        // console.log('state.elements: ', this.state.elements)
-        const buf = this.state.elements;
-        for (let i in range(0, buf.length)) {
-            if (Number(buf[i].id) === Number(node.id)) {
-                buf[i].position = node.position;
-            }
+    const onDrop = (event) => {
+      event.preventDefault();
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const type = event.dataTransfer.getData('application/reactflow');
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+      let flag = true;
+      for (let i in range(0, elements.length)) {
+        if (elements[i].position.x === position.x && elements[i].position.y === position.y) {
+          flag = false;
         }
-        this.setState({elements: buf})
-    }
+      }
 
-    render() {
-        return (
-            <div className="container-fluid">
-                <ReactFlowProvider>
-                    <ReactFlow
-                        elements={this.state.elements}
-                        style={graphStyles}
-                        // onElementClick={this.click}
-                        onNodeDragStop={this.onNodeDragStop}
-                        nodeTypes={nodeTypes}
-                        snapToGrid={true}
-                        snapGrid={[10, 10]} /*todo: задавать через входные параметры -> edit: нет, это привязка, а не границы*/
-                    >
-                        <Controls/>
-                        <Background
-                            color="#333"
-                            variant={'lines'}
-                            gap={10}
-                            style={{left: 10, right: 10, top: 10}}
-                        />
-                    </ReactFlow>
-                    <SidebarComponent/>
-                </ReactFlowProvider>
-                <Button
-                    onClick={() => this.saveButton(this.state.elements, this.state.roomId)}
-                    // startIcon={<DeleteIcon style={{color: "#ff5555"}}/>}
-                >
-                    Сохранить
-                </Button>
-            </div>
-        )
-    }
-}
+      if (flag) {
+        const newNode = {
+          id: getId(),
+          type: "custom",
+          position,
+          data: {label: `${type} node`},
+        };
+
+        setElements((es) => es.concat(newNode));
+      }
+    };
+
+    return (
+      <div className="dndflow">
+        <ReactFlowProvider>
+          <div className="reactflow-wrapper" ref={reactFlowWrapper}>
+            <ReactFlow
+              elements={elements}
+              /*onConnect={onConnect}
+              onElementsRemove={onElementsRemove}*/
+              onLoad={onLoad}
+              style={graphStyles}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onNodeDragStop={onNodeDragStop}
+              nodeTypes={nodeTypes}
+              snapToGrid={true}
+              snapGrid={[10, 10]}
+            >
+              <Controls/>
+              <Background
+                color="#333"
+                variant={'lines'}
+                gap={10}
+                style={{left: 10, right: 10, top: 10}}
+              />
+            </ReactFlow>
+          </div>
+          <SidebarComponent/>
+        </ReactFlowProvider>
+        <Button
+          onClick={() => saveButton()}
+          // startIcon={<DeleteIcon style={{color: "#ff5555"}}/>}
+        >
+          Сохранить
+        </Button>
+      </div>
+    );
+  }
+;
+
+export default DnDFlow;
