@@ -43,9 +43,11 @@ const getId = () => `dndnode_${id++}`;
 
 const DnDFlow = () => {
     const reactFlowWrapper = useRef(null);
+
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
     const [elements, setElements] = useState(initialElements);
     const [deleteMode, setDeleteMode] = useState(false);
+    const [flipFlag, setFlipFlag] = useState(false);
     /*const onConnect = (params) => setElements((els) => addEdge(params, els));
     const onElementsRemove = (elementsToRemove) =>
       setElements((els) => removeElements(elementsToRemove, els));*/
@@ -132,8 +134,9 @@ const DnDFlow = () => {
     const onDrop = (event) => {
       event.preventDefault();
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const type = event.dataTransfer.getData('application/reactflow');
-      const position = reactFlowInstance.project({
+      const type = event.dataTransfer.getData('src/component');
+      console.log("type inside:", type);
+      let position = reactFlowInstance.project({
         x: event.clientX - reactFlowBounds.left,
         y: event.clientY - reactFlowBounds.top,
       });
@@ -145,14 +148,34 @@ const DnDFlow = () => {
       }
 
       if (flag) {
-        const newNode = {
-          id: getId(),
-          type: "custom",
-          position,
-          data: {label: `${type} node`},
-        };
-
-        setElements((es) => es.concat(newNode));
+        // если растянут вдоль y (элементы типа 1x*)
+        console.log("Я считаю до: ", Number(type.substring(0, type.indexOf('x'))))
+        if (Number(type.substring(0, type.indexOf('x'))) === 1) {
+          for (let i=0; i < Number(type.substring(type.indexOf('x')+1));) {
+            const newNode = {
+              id: getId(),
+              type: "custom",
+              position: position,
+              data: {label: ``},
+            };
+            setElements((es) => es.concat(newNode));
+            i++;
+            position = {x: position.x, y: position.y + 10};
+          }
+          // если растянут вдоль x (элементы типа *x1)
+        } else if (Number(type.substring(type.indexOf('x')+1)) === 1) {
+          for (let i=0; i < Number(type.substring(0, type.indexOf('x')));) {
+            const newNode = {
+              id: getId(),
+              type: "custom",
+              position: position,
+              data: {label: ``},
+            };
+            setElements((es) => es.concat(newNode));
+            i++;
+            position = {x: position.x + 10, y: position.y};
+          }
+        }
       }
     };
 
@@ -186,7 +209,7 @@ const DnDFlow = () => {
           <div>
             {modCheck()}
           </div>
-          <SidebarComponent/>
+          <SidebarComponent flipFlag={flipFlag}/>
         </ReactFlowProvider>
         <Button
           onClick={() => saveButton()}
@@ -199,6 +222,12 @@ const DnDFlow = () => {
           // startIcon={<DeleteIcon style={{color: "#ff5555"}}/>}
         >
           Режим удаления
+        </Button>
+        <Button
+          onClick={() => setFlipFlag(!flipFlag)}
+          // startIcon={<DeleteIcon style={{color: "#ff5555"}}/>}
+        >
+          Повернуть добавляемые компоненты
         </Button>
       </div>
     );
