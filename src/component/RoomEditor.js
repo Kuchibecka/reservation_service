@@ -58,6 +58,23 @@ const DnDFlow = () => {
       // console.log("roomId: ", roomId);
     }
 
+    const modCheck = () => {
+      if (deleteMode) {
+        return (
+          <h5 style={{color: "darkred"}}>
+            РЕЖИМ УДАЛЕНИЯ АКТИВИРОВАН
+          </h5>
+        )
+      }
+      /*if (this.state.editMode) {
+        return (
+          <h5 style={{color: "darkorange"}}>
+            РЕЖИМ РЕДАКТИРОВАНИЯ АКТИВИРОВАН
+          </h5>
+        )
+      }*/
+    }
+
     const onDragOver = (event) => {
       event.preventDefault();
       event.dataTransfer.dropEffect = 'move';
@@ -79,6 +96,37 @@ const DnDFlow = () => {
       }
       setElements(buf);
       console.log("set state: ", elements)
+    }
+
+    const onElementClick = (event, element) => {
+      if (deleteMode) {
+        let id = element.id;
+        console.log("Id I want to delete is ", id);
+        // бля, надо как-то заранее знать надо ли отправлять запрос к серверу?,
+        // или мы только добавили этот элемент => начинается с "dndnode_"
+        // (сам автоматом присобачиваю при добавлении)
+        // а вот перед записью в бд на сервере мы забиваем на этот id и определяем UUID
+        let buf = elements;
+        console.log("before delete: ", elements);
+        let newElements = [];
+        if (id.startsWith("dndnode_")) {
+          for (let i in range(0, elements.length)) {
+            if (buf[i].id !== id) {
+              const newNode = {
+                id: buf[i].id,
+                type: "custom",
+                position: buf[i].position,
+                data: {label: ``},
+              };
+              newElements.push(newNode);
+            }
+          }
+          setElements(newElements);
+          console.log("after delete: ", elements);
+        } else {
+          console.log("Отправка запроса к бд, а затееееем, как сверху, удаление со схемы тут, на фронте")
+        }
+      }
     }
 
     const onDrop = (event) => {
@@ -121,6 +169,7 @@ const DnDFlow = () => {
               onDrop={onDrop}
               onDragOver={onDragOver}
               onNodeDragStop={onNodeDragStop}
+              onElementClick={onElementClick}
               nodeTypes={nodeTypes}
               snapToGrid={true}
               snapGrid={[10, 10]}
@@ -134,6 +183,9 @@ const DnDFlow = () => {
               />
             </ReactFlow>
           </div>
+          <div>
+            {modCheck()}
+          </div>
           <SidebarComponent/>
         </ReactFlowProvider>
         <Button
@@ -141,6 +193,12 @@ const DnDFlow = () => {
           // startIcon={<DeleteIcon style={{color: "#ff5555"}}/>}
         >
           Сохранить
+        </Button>
+        <Button
+          onClick={() => setDeleteMode(!deleteMode)}
+          // startIcon={<DeleteIcon style={{color: "#ff5555"}}/>}
+        >
+          Режим удаления
         </Button>
       </div>
     );
