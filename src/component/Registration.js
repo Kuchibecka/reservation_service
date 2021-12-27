@@ -5,6 +5,7 @@ export default class Login extends Component {
         super(props)
         this.state = {
             login : '',
+            nickname: '',
             password: ''
         };
     }
@@ -18,7 +19,7 @@ export default class Login extends Component {
 
     onSubmit = (event) => {
         event.preventDefault();
-        fetch('http://127.0.0.1:5000/login', {
+        fetch('http://127.0.0.1:5000/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -27,7 +28,7 @@ export default class Login extends Component {
             body: JSON.stringify(this.state),
         })
             .then(res => {
-                if (res.status === 201) {
+                if (res.status === 200) {
                     res.json().then(
                         (data) => {
                             console.log(JSON.stringify(data, null, 2))
@@ -39,19 +40,27 @@ export default class Login extends Component {
             })
             .catch(err => {
                 console.error(err);
-                alert('Error logging in please try again');
+                alert('Error in sign up please try again');
             });
     }
 
     render() {
         return (
             <form onSubmit={this.onSubmit}>
-                <h1>Login Below!</h1>
+                <h1>Sign up</h1>
                 <input
                     type="text"
                     name="login"
                     placeholder="Enter login"
                     value={this.state.login}
+                    onChange={this.handleInputChange}
+                    required
+                />
+                <input
+                    type="text"
+                    name="nickname"
+                    placeholder="Enter nickname"
+                    value={this.state.nickname}
                     onChange={this.handleInputChange}
                     required
                 />
