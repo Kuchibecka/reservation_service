@@ -31,7 +31,10 @@ export default class Login extends Component {
                 if (res.status === 200) {
                     res.json().then(
                         (data) => {
-                            console.log(JSON.stringify(data, null, 2))
+                            if (data === false)
+                                alert('Error in sign up: user exists');
+                            else
+                                console.log(JSON.stringify(data, null, 2))
                         }
                     )
                 } else {
