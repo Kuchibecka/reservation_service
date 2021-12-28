@@ -70,10 +70,10 @@ const DnDFlow = (props) => {
       useEffect(() => {
           console.log("props.data", props.data)
           let elements = [];
-          for (let i=0; i < props.data.length; i++) {
+          for (let i = 0; i < props.data.length; i++) {
               let position = {
-                  x: props.data[i].position.x,
-                  y: props.data[i].position.y,
+                  x: props.data[i].x,
+                  y: props.data[i].y,
               }
               const newElement = {
                   id: props.data[i].id,
@@ -85,7 +85,7 @@ const DnDFlow = (props) => {
           }
           setElements(elements);
           console.log("state of elements: ", elements)
-      },  initialElements);
+      }, [props.data]);
 
 
       const onLoad = (_reactFlowInstance) =>
@@ -93,6 +93,52 @@ const DnDFlow = (props) => {
 
       const saveButton = () => {
           console.log("Elements: ", elements);
+          const saveUrl = "http://127.0.0.1:5000//constructor/edit_hall?catering_id=Savoy Grill&hall_idx=0";
+          let tables = [];
+          let buf = elements;
+          for (let i = 0; i < buf.length; i++) {
+              let table = {
+                  gid: buf[i].data.label,
+                  id: buf[i].id,
+                  image: "http2",
+                  length: 1,
+                  rotation: 1,
+                  seats: 4,
+                  width: 1,
+                  x: buf[i].position.x,
+                  y: buf[i].position.y,
+              }
+              tables.push(table);
+          }
+          console.log("tables to push", tables)
+          let body = {
+              "change_size": {
+                  "width": 5000,
+                  "length": 5000
+              },
+              "tables": tables,
+          }
+          console.log("full body 4 request", body)
+          fetch(saveUrl, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  "Access-Control-Allow-Origin": "*"
+              },
+              body: JSON.stringify(body),
+          })
+            .then(res => {
+                if (res.status === 200) {
+                    res.json().then((data) => {
+                        if (data === false)
+                            alert('Error');
+                        else {
+                            console.log("RESPONSE FROM BACKEND: ", data);
+                            // this.setState({elements: data.tables/*, schemeId: this.props.schemeId*/});
+                        }
+                    });
+                }
+            })
       }
 
       const modCheck = () => {

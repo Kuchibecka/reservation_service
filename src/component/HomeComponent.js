@@ -17,13 +17,13 @@ const initialElements = [
         id: '1',
         type: 'custom',
         data: {label: ''},
-        position: {x: 250, y: 150},
+        position: {x: 250, y: 100},
     },
     {
         id: '2',
         type: 'custom',
         data: {label: ''},
-        position: {x: 350, y: 250},
+        position: {x: 350, y: 100},
     },
 ];
 
@@ -31,7 +31,7 @@ const initialElements = [
 const initialState = {
     cateringId: 'Claude Monet',
     hallId: '0',
-    elements: initialElements,
+    elements: [],
 };
 
 /**
@@ -46,7 +46,8 @@ export default class HomeComponent extends Component {
     componentDidMount() {
         //todo: вызов
         let tables;
-        fetch('http://127.0.0.1:5000//constructor/get_hall_info?catering_id=Claude Monet&hall_idx=0', {
+        this.setState({elements: initialElements});
+        fetch('http://127.0.0.1:5000//constructor/get_hall_info?catering_id=Savoy Grill&hall_idx=0', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -62,6 +63,7 @@ export default class HomeComponent extends Component {
                       else {
                           console.log("DATA GOT FROM BACKEND: ", data);
                           this.setState({elements: data.tables/*, schemeId: this.props.schemeId*/});
+                          console.log("set state.elements to : ", this, this.state.elements);
                       }
                   });
               }
