@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {range} from "lodash-es";
 import {Button} from "@material-ui/core";
 import ReactFlow, {
@@ -67,7 +67,23 @@ const DnDFlow = (props) => {
 
       // const promise = RoomService.getHallTables("Claude%20Monet", "0");
       // let tables;
-      console.log(elements);
+      useEffect(() => {
+          let elements = [];
+          for (let i=0; i < props.data.length; i++) {
+              let position = {
+                  x: props.data[i].x,
+                  y: props.data[i].y,
+              }
+              const newElement = {
+                  id: props.data[i].id,
+                  type: "custom",
+                  position: position,
+                  data: {label: ``},
+              };
+              elements.push(newElement);
+          }
+          setElements(elements);
+      }, []);
 
 
       const onLoad = (_reactFlowInstance) =>
@@ -138,7 +154,7 @@ const DnDFlow = (props) => {
               }
           } else if (rotateMode) {
               let gid = element.data.label;
-              console.log(gid.substring(0))
+              console.log("first littera: ", gid.substring(0, 1))
               let buf = elements;
               if (gid.substring(0, 1) === "v") {
                   let maxY = buf[0].position.y;
