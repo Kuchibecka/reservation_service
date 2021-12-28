@@ -13,19 +13,4 @@ export default class RoomService {
         return axios.post(CONSTRUCTOR_REST_API_URL + data)
     }
 
-
-    //todo: Вопросы:
-    //    * POST http://127.0.0.1:5000//constructor/add_user... -- это что и почему именно /constructor/ ?
-    //    * GET http://127.0.0.1:5000//constructor/get_user?login=realgordon -- зачем
-    //    *
-    //    * POST http://127.0.0.1:5000//constructor/delete_user?login= -- бля, давайте по-человечески по id, строка 27 зачем body
-    //    *
-
-
-    /**
-     * data -тело запроса
-     * async create(data) {
-        return await axios.post(OBJECT_REST_API_URL, data)
-    }
-     * */
 }

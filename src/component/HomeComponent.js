@@ -45,16 +45,26 @@ export default class HomeComponent extends Component {
 
     async componentDidMount() {
         //todo: вызов
-        const promise = await RoomService.getHallTables("Claude%20Monet", "0");
-        console.log(promise)
-        const dataPromise = await promise
-          .then(
-            response => {
-                console.log(response.data.tables);
-                this.setState({tables: response.data.tables});
-            }
-          );
-        this.setState({elements: this.props.data, schemeId: this.props.schemeId});
+        let tables;
+        fetch('http://127.0.0.1:5000//constructor/get_hall_info?catering_id=Claude Monet&hall_idx=0', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "Access-Control-Allow-Origin": "*"
+            },
+            //body: JSON.stringify(this.state),
+        })
+          .then(res => {
+              if (res.status === 200) {
+                  res.json().then((data) => {
+                      if (data === false)
+                          alert('Error in sign up: user exists');
+                      else {
+                          this.setState({elements: data.tables/*, schemeId: this.props.schemeId*/});
+                      }
+                  });
+              }
+          })
     }
 
     render() {
