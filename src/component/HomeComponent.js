@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import RoomEditor from "./RoomEditor";
+import RoomService from "../service/RoomService"
 import {
     Button
 } from "@material-ui/core";
@@ -12,13 +13,24 @@ import {
 
 
 const initialElements = [
-    { id: '1', type: 'custom', data: { label: '' }, position: { x: 100, y: 140 } },
-    { id: '2', type: 'custom', data: { label: '' }, position: { x: 100, y: 180 } },
+    {
+        id: '1',
+        type: 'custom',
+        data: {label: ''},
+        position: {x: 250, y: 150},
+    },
+    {
+        id: '2',
+        type: 'custom',
+        data: {label: ''},
+        position: {x: 350, y: 250},
+    },
 ];
 
 
 const initialState = {
-    roomId: '1',
+    cateringId: 'Claude Monet',
+    hallId: '0',
     elements: initialElements,
 };
 
@@ -31,11 +43,25 @@ export default class HomeComponent extends Component {
         this.state = initialState;
     }
 
+    async componentDidMount() {
+        //todo: вызов
+        const promise = await RoomService.getHallTables("Claude%20Monet", "0");
+        console.log(promise)
+        const dataPromise = await promise
+          .then(
+            response => {
+                console.log(response.data.tables);
+                this.setState({tables: response.data.tables});
+            }
+          );
+        this.setState({elements: this.props.data, schemeId: this.props.schemeId});
+    }
+
     render() {
         return (
-            <div className="container-fluid">
-            <RoomEditor data={this.state.elements} roomId={this.state.roomId}/>
-            </div>
+          <div className="container-fluid">
+              <RoomEditor data={this.state.elements} roomId={this.state.roomId} tables={this.state.tables}/>
+          </div>
         );
     }
 }
