@@ -33,8 +33,11 @@ export default class Login extends Component {
                         (data) => {
                             if (data === false)
                                 alert('Error in sign up: user exists');
-                            else
+                            else {
                                 console.log(JSON.stringify(data, null, 2))
+                                alert('Registration successfull!')
+                            }
+
                         }
                     )
                 } else {
