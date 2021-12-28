@@ -21,13 +21,13 @@ const initialElements = [
         id: '1',
         type: 'custom',
         data: {label: ''},
-        position: {x: 250, y: 150},
+        position: {x: 100, y: 100},
     },
     {
         id: '2',
         type: 'custom',
         data: {label: ''},
-        position: {x: 350, y: 250},
+        position: {x: 200, y: 100},
     },
 ];
 
@@ -49,10 +49,10 @@ let id = 1;
 const getId = () => `dndnode_${id++}`;
 
 let Vgid = 1;
-const getVGId = () => `v_${Vgid++}`;
+const getVGId = () => `v_v${Vgid++}`;
 
 let Ggid = 1;
-const getGGId = () => `g_${Ggid++}`;
+const getGGId = () => `g_g${Ggid++}`;
 
 let rotateMode = false;
 
@@ -60,7 +60,7 @@ const DnDFlow = (props) => {
       const reactFlowWrapper = useRef(null);
       // console.log("Tables: ", props.tables);
       const [reactFlowInstance, setReactFlowInstance] = useState(null);
-      const [elements, setElements] = useState(initialElements);
+      const [elements, setElements] = useState([]);
       const [deleteMode, setDeleteMode] = useState(false);
       const [rotateMode, setRotateMode] = useState(false);
       const [flipFlag, setFlipFlag] = useState(false);
@@ -68,11 +68,12 @@ const DnDFlow = (props) => {
       // const promise = RoomService.getHallTables("Claude%20Monet", "0");
       // let tables;
       useEffect(() => {
+          console.log("props.data", props.data)
           let elements = [];
           for (let i=0; i < props.data.length; i++) {
               let position = {
-                  x: props.data[i].x,
-                  y: props.data[i].y,
+                  x: props.data[i].position.x,
+                  y: props.data[i].position.y,
               }
               const newElement = {
                   id: props.data[i].id,
@@ -83,7 +84,8 @@ const DnDFlow = (props) => {
               elements.push(newElement);
           }
           setElements(elements);
-      }, []);
+          console.log("state of elements: ", elements)
+      },  initialElements);
 
 
       const onLoad = (_reactFlowInstance) =>
@@ -154,7 +156,7 @@ const DnDFlow = (props) => {
               }
           } else if (rotateMode) {
               let gid = element.data.label;
-              console.log("first littera: ", gid.substring(0, 1))
+              console.log("first littera: ", gid.substring(0, 1));
               let buf = elements;
               if (gid.substring(0, 1) === "v") {
                   let maxY = buf[0].position.y;
@@ -252,28 +254,28 @@ const DnDFlow = (props) => {
                   flag = false;
               }
           }
-
           if (flag) {
-              // если растянут вдоль y (элементы типа 1x*)
+              // если растянут вдоль y (элементы типа 1x*) неправильно
               if (Number(type.substring(0, type.indexOf('x'))) === 1) {
                   let gId = getVGId();
                   for (let i = 0; i < Number(type.substring(type.indexOf('x') + 1));) {
                       const newNode = {
-                          id: getId(),
+                          id: getId() + "orient" + gId,
                           type: "custom",
                           position: position,
                           data: {label: gId},
                       };
+                      let es = elements.concat(newNode)
                       setElements((es) => es.concat(newNode));
                       i++;
                       position = {x: position.x, y: position.y + 10};
                   }
-                  // если растянут вдоль x (элементы типа *x1)
+                  // если растянут вдоль x (элементы типа *x1) правильно
               } else if (Number(type.substring(type.indexOf('x') + 1)) === 1) {
                   let gId = getGGId();
                   for (let i = 0; i < Number(type.substring(0, type.indexOf('x')));) {
                       const newNode = {
-                          id: getId(),
+                          id: getId() + "orient" + gId,
                           type: "custom",
                           position: position,
                           data: {label: gId},
@@ -283,6 +285,7 @@ const DnDFlow = (props) => {
                       position = {x: position.x + 10, y: position.y};
                   }
               }
+              console.log("Dropped. new elements: ", elements)
           }
       };
 

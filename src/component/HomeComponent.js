@@ -43,7 +43,7 @@ export default class HomeComponent extends Component {
         this.state = initialState;
     }
 
-    async componentDidMount() {
+    componentDidMount() {
         //todo: вызов
         let tables;
         fetch('http://127.0.0.1:5000//constructor/get_hall_info?catering_id=Claude Monet&hall_idx=0', {
@@ -60,6 +60,7 @@ export default class HomeComponent extends Component {
                       if (data === false)
                           alert('Error in sign up: user exists');
                       else {
+                          console.log("DATA GOT FROM BACKEND: ", data);
                           this.setState({elements: data.tables/*, schemeId: this.props.schemeId*/});
                       }
                   });
