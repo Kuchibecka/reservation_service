@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
+import { useNavigate } from 'react-router-dom';
+import {Button} from "@material-ui/core";
+import {withRouter} from "react-router-dom";
 
-export default class Login extends Component {
+class Login extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -32,6 +35,8 @@ export default class Login extends Component {
                         (data) => {
                             console.log(JSON.stringify(data, null, 2))
                             alert('Login successfull!')
+                            const { history } = this.props;
+                            history.push("/constructor")
                         }
                     )
                 } else {
@@ -69,3 +74,5 @@ export default class Login extends Component {
         );
     }
 }
+
+export default withRouter(Login);
